@@ -14,4 +14,24 @@ module "security_groups" {
   environment = var.environment        # Environment name
 }
 
+module "s3" {
+  source = "./modules/s3"
 
+  environment = var.environment
+}
+
+/*module "ec2" {
+  source = "./modules/ec2"
+
+  environment          = var.environment
+  instance_type        = var.app_instance_type
+  key_name            = var.key_name  # Your existing key
+  private_subnet_ids  = module.vpc.private_app_subnet_ids
+  app_security_group_id = module.security_groups.app_sg_id
+  target_group_arn    = module.alb.target_group_arn
+  db_endpoint         = module.rds.db_endpoint
+  db_name             = module.rds.db_name
+  db_username         = var.db_username
+  db_password         = var.db_password
+}
+*/
