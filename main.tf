@@ -1,3 +1,4 @@
+
 module "vpc" {
   source = "./modules/vpc"  # Path to VPC module
 
@@ -12,3 +13,5 @@ module "security_groups" {
   vpc_id      = module.vpc.vpc_id      # VPC ID from VPC module
   environment = var.environment        # Environment name
 }
+
+

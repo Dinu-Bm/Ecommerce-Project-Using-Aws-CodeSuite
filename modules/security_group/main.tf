@@ -1,64 +1,62 @@
-# Security Group for Application Load Balancer (ALB)
-# Controls traffic to and from the load balancer
+# Security Group for Application Load Balancer
 resource "aws_security_group" "alb" {
-  name        = "${var.environment}-alb-sg"  # Security group name
-  description = "Security group for ALB"     # Description for documentation
-  vpc_id      = var.vpc_id                   # Which VPC this SG belongs to
+  name        = "${var.environment}-alb-sg"
+  description = "Security group for Application Load Balancer"
+  vpc_id      = var.vpc_id
 
-  # Ingress rule for HTTP traffic
+  # Allow HTTP traffic from anywhere
   ingress {
-    description = "HTTP"                    # Rule description
-    from_port   = 80                        # Starting port
-    to_port     = 80                        # Ending port
-    protocol    = "tcp"                     # Protocol (TCP for web traffic)
-    cidr_blocks = ["0.0.0.0/0"]             # Allow from anywhere (entire internet)
-  }
-
-  # Ingress rule for HTTPS traffic
-  ingress {
-    description = "HTTPS"                   # For secure web traffic
-    from_port   = 443                       # HTTPS port
-    to_port     = 443                       # HTTPS port
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]             # Allow from anywhere
+    cidr_blocks = ["0.0.0.0/0"]  # Allow from any IP
   }
 
-  # Egress rule (outbound traffic)
+  # Allow HTTPS traffic from anywhere
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic
   egress {
-    from_port   = 0                         # All ports
-    to_port     = 0                         # All ports
-    protocol    = "-1"                      # All protocols
-    cidr_blocks = ["0.0.0.0/0"]             # Allow to anywhere
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"  # All protocols
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
-    Name = "${var.environment}-alb-sg"      # Tag for identification
+    Name = "${var.environment}-alb-sg"
   }
 }
 
 # Security Group for Application Servers
-# Controls traffic to and from EC2 instances
 resource "aws_security_group" "app" {
   name        = "${var.environment}-app-sg"
   description = "Security group for application servers"
   vpc_id      = var.vpc_id
 
-  # Allow HTTP traffic only from ALB security group
+  # Allow HTTP traffic only from ALB
   ingress {
-    description     = "HTTP from ALB"       # Only allow HTTP from ALB
-    from_port       = 80                    # Application port
+    description     = "HTTP from ALB"
+    from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]  # Reference to ALB SG
+    security_groups = [aws_security_group.alb.id]  # Only from ALB
   }
 
-  # Allow SSH access for administration
+  # Allow SSH from anywhere (for debugging)
   ingress {
-    description = "SSH"                     # For SSH access
-    from_port   = 22                        # SSH port
+    description = "SSH"
+    from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]             # Allow SSH from anywhere (be careful!)
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow all outbound traffic
@@ -75,7 +73,6 @@ resource "aws_security_group" "app" {
 }
 
 # Security Group for Database
-# Controls access to the RDS database
 resource "aws_security_group" "database" {
   name        = "${var.environment}-database-sg"
   description = "Security group for database"
@@ -83,14 +80,14 @@ resource "aws_security_group" "database" {
 
   # Allow MySQL traffic only from application servers
   ingress {
-    description     = "MySQL"               # Database traffic
-    from_port       = 3306                  # MySQL default port
+    description     = "MySQL"
+    from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.app.id]  # Only from app servers
   }
 
-  # Allow outbound traffic
+  # Allow all outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -103,14 +100,13 @@ resource "aws_security_group" "database" {
   }
 }
 
-# Security Group for CodeDeploy
-# For instances that will run CodeDeploy agent
+# Security Group for CodeDeploy instances
 resource "aws_security_group" "codedeploy" {
   name        = "${var.environment}-codedeploy-sg"
   description = "Security group for CodeDeploy instances"
   vpc_id      = var.vpc_id
 
-  # Allow SSH for administration
+  # Allow SSH for debugging
   ingress {
     description = "SSH"
     from_port   = 22
