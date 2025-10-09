@@ -24,8 +24,3 @@ terraform {
 provider "aws" {
   region = var.aws_region 
 }
-
-# Configure the Random Provider (no configuration needed)
-provider "random" {
-  # This provider is used for generating random passwords and names
-}

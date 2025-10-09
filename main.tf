@@ -20,6 +20,12 @@ module "s3" {
   environment = var.environment
 }
 
+module "ecr" {
+  source = "./modules/ecr"
+
+  environment = var.environment
+}
+
 /*module "ec2" {
   source = "./modules/ec2"
 
