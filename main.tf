@@ -26,6 +26,18 @@ module "ecr" {
   environment = var.environment
 }
 
+module "rds" {
+  source = "./modules/rds"
+
+  environment        = var.environment
+  instance_type      = var.db_instance_type
+  db_name           = "ecommercedb"
+  db_username       = var.db_username
+  db_password       = var.db_password  # From terraform.tfvars
+  private_subnet_ids = module.vpc.private_db_subnet_ids
+  security_group_id  = module.security_groups.database_sg_id
+}
+
 /*module "ec2" {
   source = "./modules/ec2"
 
