@@ -1,4 +1,6 @@
+#############################
 # Security Group for Application Load Balancer
+#############################
 resource "aws_security_group" "alb" {
   name        = "${var.environment}-alb-sg"
   description = "Security group for Application Load Balancer"
@@ -10,7 +12,7 @@ resource "aws_security_group" "alb" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow from any IP
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Allow HTTPS traffic from anywhere
@@ -26,7 +28,7 @@ resource "aws_security_group" "alb" {
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"  # All protocols
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -35,7 +37,9 @@ resource "aws_security_group" "alb" {
   }
 }
 
+#############################
 # Security Group for Application Servers
+#############################
 resource "aws_security_group" "app" {
   name        = "${var.environment}-app-sg"
   description = "Security group for application servers"
@@ -72,7 +76,20 @@ resource "aws_security_group" "app" {
   }
 }
 
+# Extra rule: allow HTTP from anywhere for direct public IP access
+resource "aws_security_group_rule" "app_http_public" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.app.id
+  description       = "HTTP access from anywhere (for testing/public IP)"
+}
+
+#############################
 # Security Group for Database
+#############################
 resource "aws_security_group" "database" {
   name        = "${var.environment}-database-sg"
   description = "Security group for database"
@@ -100,7 +117,9 @@ resource "aws_security_group" "database" {
   }
 }
 
-# Security Group for CodeDeploy instances
+#############################
+# Security Group for CodeDeploy Instances
+#############################
 resource "aws_security_group" "codedeploy" {
   name        = "${var.environment}-codedeploy-sg"
   description = "Security group for CodeDeploy instances"
